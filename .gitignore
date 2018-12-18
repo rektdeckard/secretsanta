@@ -26,6 +26,10 @@
 *.sql
 *.sqlite
 
+# Archived versions #
+#####################
+.archived
+
 # OS generated files #
 ######################
 .DS_Store
