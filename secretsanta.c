@@ -26,18 +26,11 @@ void email(struct person, int);
 int main(void) {
     int i, n;
     printf("\e[1;1H\e[2J");
-    printf("\n\n        *~~*~~* SECRET SANTA *~~*~~*\n");
+    printf("\n        *~~*~~* SECRET SANTA *~~*~~*\n");
     printf("--------------------------------------------\n");
     printf("Enter number of players: ");
     scanf("%2d", &n);
     struct person * members = malloc(n * sizeof(struct person));
-/*
-    struct person tobias = {"Tobias", "friedtm@gmail.com", ""}; // replace with scanf()s
-    struct person helena = {"Helena", "abodywithout@gmail.com", ""};
-    struct person jerry = {"Jerry", "jerryfriedhome@gmail.com", ""};
-    struct person karen = {"Karen", "karennielsenfried@gmail.com", ""};
-    struct person jonah = {"Jonah", "jonahtfried@gmail.com", ""};
-*/
     for(i = 0; i < n; i++) {
         readPerson(&members[i], i);
     }
@@ -95,7 +88,7 @@ void derange(struct person * p, int n) {
             }
         }
     }
-    printf("FINALLY!\n");    
+    printf("  FINALLY!\n");    
 }
 
 void printPerson(struct person p, int n) {
