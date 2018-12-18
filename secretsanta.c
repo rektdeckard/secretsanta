@@ -42,11 +42,11 @@ int main(void) {
     }
 
     printf("\n");
-/*
+
     for(i = 0; i < n; i++) {
         email(members[i], i);
     }
-*/
+
     free(members);
     return 0;
 }
