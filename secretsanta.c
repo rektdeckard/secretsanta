@@ -1,46 +1,113 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
-void derange(char *[], int, int);
+// Person structure definition
+struct person {
+    char name[30];
+    char emailAddress[30];
+    char secretSanta[30];
+};
 
+// Read person prototype
+void readPerson(struct person *, int);
+
+// Derangement function prototype
+void derange(struct person *, int);
+
+// Print function prototype for diagnostic purposes. should be disbled for obscurity
+void printPerson(struct person, int);
+
+// Email function prototype
+void email(struct person, int);
+
+
+// Main function
 int main(void) {
     int i, n;
-    int m = 30;
-    printf("Enter number of participants: ");
-    scanf("%d", &n);
-    char address[n][30];
-    for(i = 0; i < n; i++) { // store addresses
-        printf("Enter participant %d email address: ", i+1);
-        scanf("%s", address[i]);
-    }
-    printf("Before Derangement:\n"); // print addresses before derangement
+    printf("\e[1;1H\e[2J");
+    printf("\n\n        *~~*~~* SECRET SANTA *~~*~~*\n");
+    printf("--------------------------------------------\n");
+    printf("Enter number of players: ");
+    scanf("%2d", &n);
+    struct person * members = malloc(n * sizeof(struct person));
+/*
+    struct person tobias = {"Tobias", "friedtm@gmail.com", ""}; // replace with scanf()s
+    struct person helena = {"Helena", "abodywithout@gmail.com", ""};
+    struct person jerry = {"Jerry", "jerryfriedhome@gmail.com", ""};
+    struct person karen = {"Karen", "karennielsenfried@gmail.com", ""};
+    struct person jonah = {"Jonah", "jonahtfried@gmail.com", ""};
+*/
     for(i = 0; i < n; i++) {
-        printf("  Address %d is %s.\n", i+1, address[i]);
+        readPerson(&members[i], i);
     }
-    derange((char **)address, n, m);
-    printf("After Derangement:\n"); // print addresses after derangement
+
+    derange(members, n);
+
     for(i = 0; i < n; i++) {
-        printf("  Address %d is %s.\n", i+1, address[i]);
+        printPerson(members[i], i);
     }
+
+    printf("\n");
+/*
+    for(i = 0; i < n; i++) {
+        email(members[i], i);
+    }
+*/
+    free(members);
     return 0;
 }
 
-void derange(char *address[], int n, int m) {
-    srand(time(NULL)); // initialie rand()
-    printf("  Randomizing Addresses...\n");
-    int i;
+void readPerson(struct person * p, int n) {
+    printf("Player %d\n", n+1);
+    printf("  Enter player name: ");
+    scanf("%29s", p->name);
+    printf("  Enter Player email address: ");
+    scanf("%29s", p->emailAddress);
+}
+
+void derange(struct person * p, int n) {
+    srand(time(NULL));  // initialize PRNG
+    printf("--------------------------------------------\n");
+    printf("Randomizing...\n");
+    int guesses[n];
+    int i, j, r;
     for(i = 0; i < n; i++) {
-        char temp[30];
-        temp = address[i]; //breaks
-        int r = i;
-        while(r == i) {
-            r = (rand() % n);
-            printf("    Swapping index %d and %d\n", i, r);
-        }
-        address[i] = address[r]; //wrong
-        address[r] = temp;
+        guesses[i] = -1;
     }
-    printf("  Done\n");
+    for(i = 0; i < n; i++) {
+        r = (rand() % n);
+        if(r == i) {
+            i = -1;
+            printf("  That won't work.\n");
+        } else {
+            for(j = 0; j < n; j++) {
+                if(r == guesses[j]) {
+                    i = -1;
+		    guesses[j] = -1;
+                    printf("  Already used...\n");
+                }
+            }
+            if(i == -1) continue;
+            guesses[i] = r;
+            for(j = 0; j < 30; j++) {
+                p[i].secretSanta[j] = p[r].name[j];
+            }
+        }
+    }
+    printf("FINALLY!\n");    
+}
+
+void printPerson(struct person p, int n) {
+    printf("--------------------------------------------\n");
+    printf("Player %d\n", n+1);
+    printf("  Name: %s\n", p.name);
+    printf("  Email address: %s\n", p.emailAddress);
+    printf("  Secret Santa: %s\n", p.secretSanta);
+}
+
+void email(struct person p, int i) {
+    char send[512];
+    sprintf(send, "echo \"Hello %s! Your Secret Santa this year is %s!\" | mutt -s \"Secret Santa 2018\" %s", p.name, p.secretSanta, p.emailAddress);
+    system(send);
 }
