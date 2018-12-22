@@ -25,11 +25,16 @@ void email(struct person, int);
 // Main function
 int main(void) {
     int i, n;
+    char term, em, pr;
     printf("\e[1;1H\e[2J");
     printf("\n        *~~*~~* SECRET SANTA *~~*~~*\n");
     printf("--------------------------------------------\n");
     printf("Enter number of players: ");
-    scanf("%2d", &n);
+    // Sanitized input
+    if(scanf("%2d%c", &n, &term) != 2 || term !='\n') {
+        printf("Invalid entry. Exiting.\n");
+        return 1;
+    }
     struct person * members = malloc(n * sizeof(struct person));
     for(i = 0; i < n; i++) {
         readPerson(&members[i], i);
@@ -37,14 +42,33 @@ int main(void) {
 
     derange(members, n);
 
-    for(i = 0; i < n; i++) {
-        printPerson(members[i], i);
+    // Print?
+    printf("--------------------------------------------\n");
+    while((pr != 'y') && (pr != 'Y') && (pr != 'n') && (pr != 'N')) {
+        printf("Print results? [y/n]: ");
+        scanf(" %c", &pr);
+        if((pr == 'y') || (pr == 'Y')) {
+            for(i = 0; i < n; i++) {
+                printPerson(members[i], i);
+            }
+        } else if((pr != 'n') && (pr != 'N')) {
+            printf("Invalid entry. ");
+        }
     }
 
-    printf("\n");
-
-    for(i = 0; i < n; i++) {
-        email(members[i], i);
+ 
+    // Email?
+    printf("--------------------------------------------\n");
+    while((em != 'y') && (em != 'Y') && (em != 'n') && (em != 'N')) {
+        printf("Email results? [y/n]: ");
+        scanf(" %c", &em);
+        if((em == 'y') || (em == 'Y')) {
+            for(i = 0; i < n; i++) {
+                email(members[i], i);
+            }
+        } else if((em != 'n') && (em != 'N')) {
+            printf("Invalid entry. ");
+        }
     }
 
     free(members);
