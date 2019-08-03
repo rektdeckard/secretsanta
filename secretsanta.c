@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+#include <curl/curl.h>
+
+#define FROM_ADDR   "<mailbot@tobiasfried.com>"
+#define FROM_MAIL   "Secret Santa Mailbot " FROM_ADR
 
 // Person structure definition
 struct person {
@@ -21,11 +26,14 @@ void printPerson(struct person, int);
 // Email function prototype
 void email(struct person, int);
 
+CURL *curl;
 
 // Main function
 int main(void) {
+
     int i, n;
     char term, em, pr;
+
     printf("\e[1;1H\e[2J");
     printf("\n        *~~*~~* SECRET SANTA *~~*~~*\n");
     printf("--------------------------------------------\n");
@@ -66,6 +74,7 @@ int main(void) {
             for(i = 0; i < n; i++) {
                 email(members[i], i);
             }
+            curl_easy_cleanup(curl);
         } else if((em != 'n') && (em != 'N')) {
             printf("Invalid entry. ");
         }
@@ -124,7 +133,83 @@ void printPerson(struct person p, int n) {
 }
 
 void email(struct person p, int i) {
-    char send[512];
-    sprintf(send, "echo \"Hello %s! Your Secret Santa this year is %s!\" | mutt -s \"Secret Santa 2018\" %s", p.name, p.secretSanta, p.emailAddress);
-    system(send);
+
+    // Create Payload
+    time_t curtime;
+    time(&curtime);
+    char date[80];
+    snprintf(date, 80, "Date: %s\r\n", ctime(&curtime));
+    char to[80];
+    snprintf(to, 80, "To: %s\r\n", p.emailAddress);
+    char from[40] = "From: mailbot@tobiasfried.com\r\n";
+    char cc[10] = "Cc: \r\n";
+    char subject[40] = "Subject: Secret Santa Bot\r\n\r\n";
+    char body[160];
+    snprintf(body, 160, "Seasons greetings, %s! Your Secret Santa this year is %s.\r\n", p.name, p.secretSanta);
+
+    const char *payload_text[] = {
+        date,
+        to,
+        from,
+        cc,
+        subject,
+        body,
+        NULL
+    };
+
+    for (int i = 0; payload_text[i]; ++i) {
+        const char *ch = payload_text[i];
+        while(*ch) {
+            putchar(*ch++);
+        }
+    }
+
+    struct upload_status {
+        int lines_read;
+    };
+
+    // Initialize curl
+    CURLcode res = CURLE_OK;
+    struct curl_slist *recipients = NULL;
+    struct upload_status upload_ctx;
+
+    upload_ctx.lines_read = 0;
+
+    curl = curl_easy_init();
+    if(curl) {
+        // Mailserver
+        curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.dreamhost.com");
+        curl_easy_setopt(curl, CURLOPT_USERNAME, "mailbot@mail.tobiasfried.com");
+        curl_easy_setopt(curl, CURLOPT_USERNAME, "nhdquyT6@wniLwD");
+
+        #ifdef SKIP_PEER_VERIFICATION
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        #endif
+        #ifdef SKIP_HOSTNAME_VERIFICATION
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        #endif
+
+        // Set mailfrom: address
+        curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM_ADDR);
+
+        // Add recipient
+        recipients = curl_slist_append(recipients, p.emailAddress);
+        curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
+
+        // Specify payload
+        curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+
+        // Send the message
+        res = curl_easy_perform(curl);
+
+        // Check for errors
+        if(res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        }
+
+        // Free list of recipients
+        curl_slist_free_all(recipients);
+    }
+
 }
