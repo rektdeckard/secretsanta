@@ -4,7 +4,7 @@
 #include <string.h>
 #include <curl/curl.h>
 
-#define FROM_ADDR   "<mailbot@tobiasfried.com>"
+#define FROM_ADDR   "mailbot@tobiasfried.com"
 #define FROM_MAIL   "Secret Santa Mailbot " FROM_ADR
 
 // Person structure definition
@@ -181,6 +181,7 @@ void email(struct person p, int i) {
         curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.dreamhost.com");
         curl_easy_setopt(curl, CURLOPT_USERNAME, "mailbot@mail.tobiasfried.com");
         curl_easy_setopt(curl, CURLOPT_USERNAME, "nhdquyT6@wniLwD");
+        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
 
         #ifdef SKIP_PEER_VERIFICATION
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
